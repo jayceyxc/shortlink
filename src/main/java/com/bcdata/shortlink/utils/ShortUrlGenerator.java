@@ -17,8 +17,6 @@ import java.util.Random;
  */
 public class ShortUrlGenerator {
 
-    private static final Random random = new Random();
-
     public static String bytesToHex(byte[] bytes) {
         StringBuffer hexStr = new StringBuffer ();
         int num;
@@ -60,7 +58,7 @@ public class ShortUrlGenerator {
      * @param url 长链接网址
      * @return 短链接网址
      */
-    public static String shortUrl(String url) {
+    public static String[] shortUrl(String url) {
         // 可以自定义生成 MD5 加密字符传前的混合 KEY
 //        String key = "mengdelong" ;
         // 要使用生成 URL 的字符
@@ -96,7 +94,7 @@ public class ShortUrlGenerator {
             // 把字符串存入对应索引的输出数组
             resUrl[i] = outChars.toString ();
         }
-        return resUrl[random.nextInt (resUrl.length)];
+        return resUrl;
     }
 
     public static void main (String[] args) {
