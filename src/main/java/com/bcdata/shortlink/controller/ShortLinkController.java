@@ -87,7 +87,7 @@ public class ShortLinkController {
                         lock.writeLock ().unlock ();
                         logger.info ("flush thread release write lock");
                     }
-                    TimeUnit.SECONDS.sleep (10);
+                    TimeUnit.SECONDS.sleep (60);
                 } catch (InterruptedException ie) {
                     ie.printStackTrace ();
                 }
