@@ -1,53 +1,64 @@
 <!DOCTYPE html>
 <html>
 <head>
-<meta charset="UTF-8">
-<title>短网址服务</title>
+    <meta charset="UTF-8">
+    <title>短网址服务</title>
 
-<script src='/webjars/jquery/jquery.js' type="text/javascript"></script>
-<script src="/webjars/bootstrap/js/bootstrap.min.js"></script>
-<link href="/webjars/bootstrap/css/bootstrap.min.css" rel="stylesheet" type="text/css" />
+    <script src='/webjars/jquery/jquery.js' type="text/javascript"></script>
+    <script src="/webjars/bootstrap/js/bootstrap.min.js"></script>
+    <link href="/webjars/bootstrap/css/bootstrap.min.css" rel="stylesheet" type="text/css"/>
 </head>
 <body>
 
 <div class="jumbotron">
-  <h1 class="display-4">欢迎使用短网址服务</h1>
-  <p class="lead">version 0.1.0</p>
-  <hr class="my-4">
-  <p>可将任意URL转化为短网址，并提供该短网址的PV(点击数)统计信息。</p>
+    <h1 class="display-4">欢迎使用短网址服务</h1>
+    <p class="lead">version 0.1.0</p>
+    <hr class="my-4">
+    <p>可将任意URL转化为短网址，并提供该短网址的PV(点击数)统计信息。</p>
 </div>
 
 <div class="container">
-<form action="/shortlink/add" method="post">
-	<div class="form-group">
-	    <label for="short">请输入带转换的原URL</label>
-		<input id="short" name="url" type="text">
-	</div>
- 	<button type="submit" class="btn btn-primary">获得短网址</button>
-</form>
+    <form action="/shortlink/add" method="post">
+        <div class="form-group">
+            <label for="short">请输入带转换的原URL</label>
+            <input id="short" name="url" type="text">
+        </div>
+        <button type="submit" class="btn btn-primary">获得短网址</button>
+    </form>
 </div>
 
 
 <div class="container mt-5">
-<p>以下为生成的短网址的统计表</p>
-<table class="table">
- <thead>
-    <tr>
-      <th scope="col">URL</th>
-      <th scope="col">Short</th>
-      <th scope="col">短网址PV</th>
-    </tr>
-  </thead>
-  <tbody>
-   <th:block th:each="record : ${records}">
-      <tr>
-         <td scope="row" th:text="${record.fullLink}">...</td>
-         <td scope="row" th:text="${record.shortLink}">...</td>
-         <td scope="row" th:text="${record.count}">...</td>
-      </tr>
-   </th:block>
-   </tbody>
-</table>
+    <p>以下为生成的短网址的统计表</p>
+    <table class="table", id="tab">
+        <thead>
+        <tr>
+            <th scope="col">URL</th>
+            <th scope="col">Short</th>
+            <th scope="col">短网址PV</th>
+            <th scope="col">短网址PV</th>
+        </tr>
+        </thead>
+        <tbody>
+        <th:block th:each="record : ${records}">
+            <tr>
+                <td scope="row" th:text="${record.fullLink}">...</td>
+                <td scope="row" th:text="${record.shortLink}">...</td>
+                <td scope="row" th:text="${record.count}">...</td>
+                <td><input type="button" value="删除"/></td>
+            </tr>
+        </th:block>
+        </tbody>
+    </table>
 </div>
+<!--<input type="text" id="text" />-->
+<script type="text/javascript">
+$(function(){
+    $("#tab").on("click", ":button", function(event){
+        <!--$("#text").val($(this).closest("tr").find("td").eq(1).text());-->
+        location.href="shortlink/del?url=" + $(this).closest("tr").find("td").eq(1).text()
+    });
+});
+</script>
 </body>
 </html>
