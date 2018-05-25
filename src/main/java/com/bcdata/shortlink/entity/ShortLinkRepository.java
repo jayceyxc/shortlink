@@ -33,8 +33,18 @@ public interface ShortLinkRepository extends JpaRepository<ShortLink, Integer> {
 //    @Override
 //    ShortLink save(ShortLink shortLink);
 
+    ShortLink findByFullLink(String fullLink);
+
+    ShortLink findByShortLink(String shortLink);
+
     @Transactional
 //    @Modifying
 //    @CacheEvict
     void deleteByUri(String uri);
+
+    @Transactional
+    void deleteByShortLink(String shortLink);
+
+    @Transactional
+    void deleteByFullLink(String fullLink);
 }

@@ -1,6 +1,6 @@
 #!/bin/sh
 
-APP_JAR="short-link-0.1.jar"
+APP_JAR="short-link-0.2.jar"
 
 pid=0
 check_pid() {
