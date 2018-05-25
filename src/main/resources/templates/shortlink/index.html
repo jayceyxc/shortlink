@@ -30,19 +30,19 @@
 
 <div class="container mt-5">
     <p>以下为生成的短网址的统计表</p>
-    <table class="table", id="tab">
+    <table class="table" id="tab" style="table-layout:fixed">
         <thead>
         <tr>
-            <th scope="col">URL</th>
+            <th scope="col" width="50%">URL</th>
             <th scope="col">Short</th>
             <th scope="col">短网址PV</th>
-            <th scope="col">短网址PV</th>
+            <th scope="col">操作</th>
         </tr>
         </thead>
         <tbody>
         <th:block th:each="record : ${records}">
             <tr>
-                <td scope="row" th:text="${record.fullLink}">...</td>
+                <td scope="row" th:text="${record.fullLink}" th:title="${record.fullLink}" style="overflow: hidden; white-space: nowrap; text-overflow: ellipsis;">...</td>
                 <td scope="row" th:text="${record.shortLink}">...</td>
                 <td scope="row" th:text="${record.count}">...</td>
                 <td><input type="button" value="删除"/></td>
