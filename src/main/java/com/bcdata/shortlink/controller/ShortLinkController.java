@@ -231,7 +231,7 @@ public class ShortLinkController {
     public String getAllShortLink(Model model) {
         List<ShortLink> results = shortLinkRepository.findAll ();
         for (ShortLink shortLink : results) {
-            logger.info ("record: " + shortLink);
+            logger.debug ("record: " + shortLink);
         }
         model.addAttribute ("records", results);
 
@@ -252,9 +252,9 @@ public class ShortLinkController {
             }
         }
         if (savedShortLink != null) {
-            logger.info ("before saved short link: " + savedShortLink);
+            logger.debug ("before saved short link: " + savedShortLink);
             savedShortLink.incrementCount ();
-            logger.info ("after saved short link: " + savedShortLink);
+            logger.debug ("after saved short link: " + savedShortLink);
 //            shortLinkRepository.saveAndFlush (savedShortLink);
             shortLinkCache.put (uri, savedShortLink);
             if (!updatedUri.contains (uri)) {
