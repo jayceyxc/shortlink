@@ -33,7 +33,7 @@ public class ShortLink {
     private String shortLink;
 
     @NotNull
-    @Column(name = "full_link", updatable = false)
+    @Column(name = "full_link", updatable = false, length = 2048)
     private String fullLink;
 
     @Column(name = "count")
