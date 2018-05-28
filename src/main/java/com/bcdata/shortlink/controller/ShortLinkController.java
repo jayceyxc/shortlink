@@ -3,14 +3,12 @@ package com.bcdata.shortlink.controller;
 import com.bcdata.shortlink.config.ShortLinkWebConfig;
 import com.bcdata.shortlink.entity.ShortLink;
 import com.bcdata.shortlink.entity.ShortLinkRepository;
-import com.bcdata.shortlink.entity.UrlStat;
 import com.bcdata.shortlink.utils.ShortUrlGenerator;
 import org.apache.commons.lang3.StringUtils;
-import org.json.JSONObject;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.data.redis.core.ReactiveRedisOperations;
+import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.*;
@@ -21,7 +19,9 @@ import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
 import java.net.MalformedURLException;
 import java.net.URL;
-import java.util.*;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
@@ -229,7 +229,8 @@ public class ShortLinkController {
 
     @GetMapping(path="/shortlink") // Map ONLY GET Requests
     public String getAllShortLink(Model model) {
-        List<ShortLink> results = shortLinkRepository.findAll ();
+        Sort sort = new Sort (Sort.Direction.DESC, "id");
+        List<ShortLink> results = shortLinkRepository.findAll (sort);
         for (ShortLink shortLink : results) {
             logger.debug ("record: " + shortLink);
         }
