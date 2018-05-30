@@ -228,6 +228,82 @@ public class ShortLinkController {
         return "shortlink/delete";
     }
 
+    @GetMapping(path="/shortlink/display")    // Map ONLY GET Requests
+    public String displayShortLink(@RequestParam(name = "url", required = true) String url, Model model) {
+        String origUrl = url;
+        if (!url.startsWith ("http://") && !url.startsWith ("https://")) {
+            url = "http://" + url;
+        }
+        try {
+            URL netUrl = new URL (url);
+            String uri = netUrl.getPath ();
+            if (uri.startsWith ("/")) {
+                uri = StringUtils.strip (uri, "/");
+            }
+            ShortLink shortLink = shortLinkCache.get (uri);
+            if (shortLink != null) {
+                model.addAttribute ("url", shortLink.getShortLink ());
+                model.addAttribute ("name", shortLink.getName ());
+                return "shortlink/modify";
+            } else {
+                shortLink = shortLinkRepository.findByShortLink (url);
+                if (shortLink != null) {
+                    model.addAttribute ("url", shortLink.getShortLink ());
+                    model.addAttribute ("name", shortLink.getName ());
+                    return "shortlink/modify";
+                } else {
+                    logger.error ("The short link for url " + origUrl + " is not exist");
+                }
+            }
+        }  catch (MalformedURLException mue) {
+            mue.printStackTrace ();
+        }
+
+        model.addAttribute ("message", "短链接不存在");
+        return "shortlink/alreadyExists";
+    }
+
+    @PostMapping(path="/shortlink/modify")    // Map ONLY POST Requests
+    public String modifyShortLink(@RequestParam(name = "name", required = true) String name, @RequestParam(name = "url", required = true) String url, Model model) {
+        logger.info ("url: " + url);
+        logger.info ("name: " + name);
+        String origUrl = url;
+        if (!url.startsWith ("http://") && !url.startsWith ("https://")) {
+            url = "http://" + url;
+        }
+        try {
+            URL netUrl = new URL (url);
+            String uri = netUrl.getPath ();
+            if (uri.startsWith ("/")) {
+                uri = StringUtils.strip (uri, "/");
+            }
+            ShortLink shortLink = shortLinkCache.get (uri);
+            if (shortLink != null) {
+                shortLink.setName (name);
+                shortLinkRepository.saveAndFlush (shortLink);
+                model.addAttribute ("url", origUrl);
+                model.addAttribute ("name", name);
+                return "shortlink/success";
+            } else {
+                shortLink = shortLinkRepository.findByShortLink (url);
+                if (shortLink != null) {
+                    shortLink.setName (name);
+                    shortLinkRepository.saveAndFlush (shortLink);
+                    model.addAttribute ("url", origUrl);
+                    model.addAttribute ("name", name);
+                    return "shortlink/success";
+                } else {
+                    logger.error ("The short link for url " + origUrl + " is not exist");
+                }
+            }
+        }  catch (MalformedURLException mue) {
+            mue.printStackTrace ();
+        }
+
+        model.addAttribute ("message", "短链接不存在");
+        return "shortlink/alreadyExists";
+    }
+
     @GetMapping(path="/shortlink") // Map ONLY GET Requests
     public String getAllShortLink(Model model) {
         Sort sort = new Sort (Sort.Direction.DESC, "id");
