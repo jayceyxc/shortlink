@@ -22,6 +22,10 @@ public class ShortLink {
     private Integer id;
 
     @NotNull
+    @Column(name = "name")
+    private String name;
+
+    @NotNull
     @Size(min = 2, max = 10)
     @Column(name = "uri", unique = true)
     @org.hibernate.annotations.Index (name = "uri_index")
@@ -38,6 +42,7 @@ public class ShortLink {
 
     @Column(name = "count")
     private int count;
+
 
     public ShortLink() {
 
@@ -89,6 +94,14 @@ public class ShortLink {
         this.count = count;
     }
 
+    public String getName () {
+        return name;
+    }
+
+    public void setName (String name) {
+        this.name = name;
+    }
+
     public void incrementCount() {
         count++;
     }
@@ -98,17 +111,18 @@ public class ShortLink {
         if (this == o) return true;
         if (o == null || getClass () != o.getClass ()) return false;
         ShortLink shortLink1 = (ShortLink) o;
-        return Objects.equals (getId (), shortLink1.getId ()) &&
+        return getCount () == shortLink1.getCount () &&
+                Objects.equals (getId (), shortLink1.getId ()) &&
                 Objects.equals (getUri (), shortLink1.getUri ()) &&
                 Objects.equals (getShortLink (), shortLink1.getShortLink ()) &&
                 Objects.equals (getFullLink (), shortLink1.getFullLink ()) &&
-                Objects.equals (getCount (), shortLink1.getCount ());
+                Objects.equals (getName (), shortLink1.getName ());
     }
 
     @Override
     public int hashCode () {
 
-        return Objects.hash (getId (), getUri (), getShortLink (), getFullLink (), getCount ());
+        return Objects.hash (getId (), getUri (), getShortLink (), getFullLink (), getCount (), getName ());
     }
 
     @Override
@@ -119,6 +133,7 @@ public class ShortLink {
                 ", shortLink='" + shortLink + '\'' +
                 ", fullLink='" + fullLink + '\'' +
                 ", count=" + count +
+                ", name='" + name + '\'' +
                 '}';
     }
 }

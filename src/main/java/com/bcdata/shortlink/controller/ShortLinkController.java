@@ -116,7 +116,7 @@ public class ShortLinkController {
     }
 
     @PostMapping(path="/shortlink/add")    // Map ONLY GET Requests
-    public String addShortLink(@RequestParam(name = "url", required = true) String url, Model model) {
+    public String addShortLink(@RequestParam(name = "url", required = true) String url, @RequestParam(name = "name", required = true) String name, Model model) {
         // @ResponseBody means the returned String is the response, not a view name
         // @RequestParam means it is a parameter from the GET or POST request
 
@@ -136,6 +136,7 @@ public class ShortLinkController {
                 shortLinkObj.setUri (shortLinkStr);
                 shortLinkStr = String.format ("%s/%s", domain, shortLinkStr);
                 shortLinkObj.setShortLink (shortLinkStr);
+                shortLinkObj.setName (name);
                 ShortLink savedShortLink = shortLinkRepository.save (shortLinkObj);
                 logger.info (savedShortLink.toString ());
 

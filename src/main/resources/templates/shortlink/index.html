@@ -20,8 +20,10 @@
 <div class="container">
     <form action="/shortlink/add" method="post">
         <div class="form-group">
-            <label for="short">请输入带转换的原URL</label>
-            <input id="short" name="url" type="text">
+            <label for="name">请输入短链接名称: </label>
+            <input id="name" name="name" type="text">
+            <label for="url">请输入带转换的原URL: </label>
+            <input id="url" name="url" type="text">
         </div>
         <button type="submit" class="btn btn-primary">获得短网址</button>
     </form>
@@ -33,6 +35,7 @@
     <table class="table" id="tab" style="table-layout:fixed">
         <thead>
         <tr>
+            <th scope="col">名称</th>
             <th scope="col" width="50%">URL</th>
             <th scope="col">Short</th>
             <th scope="col">短网址PV</th>
@@ -42,6 +45,7 @@
         <tbody>
         <th:block th:each="record : ${records}">
             <tr>
+                <td scope="row" th:text="${record.name}">...</td>
                 <td scope="row" th:text="${record.fullLink}" th:title="${record.fullLink}" style="overflow: hidden; white-space: nowrap; text-overflow: ellipsis;">...</td>
                 <td scope="row" th:text="${record.shortLink}">...</td>
                 <td scope="row" th:text="${record.count}">...</td>
