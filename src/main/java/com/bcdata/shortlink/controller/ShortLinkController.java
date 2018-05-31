@@ -121,6 +121,7 @@ public class ShortLinkController {
         // @RequestParam means it is a parameter from the GET or POST request
 
         logger.info ("have short link add request, url is: " + url);
+        url = url.trim ();
         ShortLink shortLink;
         if ((shortLink = shortLinkRepository.findByFullLink (url)) != null) {
             logger.info ("This url already have short link");
@@ -140,17 +141,23 @@ public class ShortLinkController {
                 ShortLink savedShortLink = shortLinkRepository.save (shortLinkObj);
                 logger.info (savedShortLink.toString ());
 
-//                if (format.equals ("json")) {
-//                    Map<String, String> results = new HashMap<> ();
-//                    results.put ("err", "");
-//                    results.put ("url", savedShortLink.getShortLink ());
-//
-//                    JSONObject jsonObject = new JSONObject (results);
-//
-//                    return jsonObject.toString ();
-//                } else {
-//                    return savedShortLink.getShortLink ();
-//                }
+                shortLinkCache.put (shortLinkStr, savedShortLink);
+                if (!updatedUri.contains (shortLinkStr)) {
+                    try {
+                        if (lock.writeLock ().tryLock (100, TimeUnit.MILLISECONDS)) {
+                            logger.info ("main thread add function get the write lock");
+                            try {
+                                logger.info ("add the uri to updated uri: " + shortLinkStr);
+                                updatedUri.add (shortLinkStr);
+                            } finally {
+                                lock.writeLock ().unlock ();
+                                logger.info ("main thread release the write lock");
+                            }
+                        }
+                    } catch (InterruptedException ie) {
+                        logger.warn (ie.getMessage ());
+                    }
+                }
                 model.addAttribute ("shortLink", savedShortLink.getShortLink ());
                 return "shortlink/short";
             }
@@ -176,6 +183,7 @@ public class ShortLinkController {
     @GetMapping(path="/shortlink/del")    // Map ONLY GET Requests
     public String delShortLink(@RequestParam(name = "url", required = true) String url, Model model) {
         logger.info ("have short link delete request, url is: " + url);
+        url = url.trim ();
         String origUrl = url;
         if (shortLinkRepository.findByShortLink (url) == null) {
 //            Map<String, String> results = new HashMap<> ();
@@ -230,6 +238,47 @@ public class ShortLinkController {
 
     @GetMapping(path="/shortlink/display")    // Map ONLY GET Requests
     public String displayShortLink(@RequestParam(name = "url", required = true) String url, Model model) {
+        url = url.trim ();
+        String origUrl = url;
+        if (!url.startsWith ("http://") && !url.startsWith ("https://")) {
+            url = "http://" + url;
+        }
+        try {
+            URL netUrl = new URL (url);
+            String uri = netUrl.getPath ();
+            if (uri.startsWith ("/")) {
+                uri = StringUtils.strip (uri, "/");
+            }
+            ShortLink shortLink = shortLinkCache.get (uri);
+            if (shortLink != null) {
+                model.addAttribute ("short_link", shortLink.getShortLink ());
+                model.addAttribute ("name", shortLink.getName ());
+                model.addAttribute ("full_link", shortLink.getFullLink ());
+                model.addAttribute ("count", shortLink.getCount ());
+                return "shortlink/display";
+            } else {
+                shortLink = shortLinkRepository.findByShortLink (origUrl);
+                if (shortLink != null) {
+                    model.addAttribute ("short_link", shortLink.getShortLink ());
+                    model.addAttribute ("name", shortLink.getName ());
+                    model.addAttribute ("full_link", shortLink.getFullLink ());
+                    model.addAttribute ("count", shortLink.getCount ());
+                    return "shortlink/display";
+                } else {
+                    logger.error ("The short link for url " + origUrl + " is not exist");
+                }
+            }
+        }  catch (MalformedURLException mue) {
+            mue.printStackTrace ();
+        }
+
+        model.addAttribute ("message", "短链接不存在");
+        return "shortlink/alreadyExists";
+    }
+
+    @GetMapping(path="/shortlink/modify")    // Map ONLY GET Requests
+    public String modifyShortLink(@RequestParam(name = "url", required = true) String url, Model model) {
+        url = url.trim ();
         String origUrl = url;
         if (!url.startsWith ("http://") && !url.startsWith ("https://")) {
             url = "http://" + url;
@@ -246,7 +295,7 @@ public class ShortLinkController {
                 model.addAttribute ("name", shortLink.getName ());
                 return "shortlink/modify";
             } else {
-                shortLink = shortLinkRepository.findByShortLink (url);
+                shortLink = shortLinkRepository.findByShortLink (origUrl);
                 if (shortLink != null) {
                     model.addAttribute ("url", shortLink.getShortLink ());
                     model.addAttribute ("name", shortLink.getName ());
@@ -263,10 +312,12 @@ public class ShortLinkController {
         return "shortlink/alreadyExists";
     }
 
+
     @PostMapping(path="/shortlink/modify")    // Map ONLY POST Requests
     public String modifyShortLink(@RequestParam(name = "name", required = true) String name, @RequestParam(name = "url", required = true) String url, Model model) {
         logger.info ("url: " + url);
         logger.info ("name: " + name);
+        url = url.trim ();
         String origUrl = url;
         if (!url.startsWith ("http://") && !url.startsWith ("https://")) {
             url = "http://" + url;
@@ -285,7 +336,7 @@ public class ShortLinkController {
                 model.addAttribute ("name", name);
                 return "shortlink/success";
             } else {
-                shortLink = shortLinkRepository.findByShortLink (url);
+                shortLink = shortLinkRepository.findByShortLink (origUrl);
                 if (shortLink != null) {
                     shortLink.setName (name);
                     shortLinkRepository.saveAndFlush (shortLink);
@@ -319,6 +370,7 @@ public class ShortLinkController {
     @RequestMapping(value="/{uri}")
     void handleShortLink(HttpServletResponse response, @PathVariable("uri") String uri) throws IOException {
         logger.info ("uri is: " + uri);
+        uri = uri.trim ();
 
         ShortLink savedShortLink = null;
         if (shortLinkCache.containsKey (uri)) {

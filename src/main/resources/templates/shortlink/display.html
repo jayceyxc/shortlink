@@ -1,0 +1,44 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <title>短网址服务</title>
+    <script src='/webjars/jquery/jquery.js' type="text/javascript"></script>
+    <script src="/webjars/bootstrap/js/bootstrap.min.js"></script>
+    <link href="/webjars/bootstrap/css/bootstrap.min.css" rel="stylesheet" type="text/css"/>
+</head>
+<body>
+<div class="container-fluid">
+    <div>
+        <h2 class="display-5 text-center">短链接详细信息</h2>
+    </div>
+    <div class="row">
+        <div class="col-xs-3 col-md-2 text-right">名称:</div>
+        <div class="col-xs-12 col-sm-6 col-md-8 text-left" th:text="${name}">...</div>
+    </div>
+    <div class="row">
+        <div class="col-xs-3 col-md-2 text-right">短链接:</div>
+        <div class="col-xs-12 col-sm-6 col-md-8 text-left" th:text="${short_link}">...</div>
+    </div>
+    <div class="row">
+        <div class="col-xs-3 col-md-2 text-right">完整链接:</div>
+        <div class="col-xs-12 col-sm-6 col-md-8 text-left" th:text="${full_link}">...</div>
+    </div>
+    <div>
+        <a class="btn btn-primary active" role="button" href="/shortlink">返回主页</a>
+    </div>
+</div>
+<!--<dl class="dl-horizontal">-->
+<!--<dt>名称：</dt>-->
+<!--<dd th:text="${name}"></dd>-->
+<!--</dl>-->
+<!--<dl class="dl-horizontal">-->
+<!--<dt>短链接: </dt>-->
+<!--<dd th:text="${short_link}"></dd>-->
+<!--</dl>-->
+<!--<dl class="dl-horizontal">-->
+<!--<dt>完整链接: </dt>-->
+<!--<dd th:text="${full_link}"></dd>-->
+<!--</dl>-->
+</body>
+</html>

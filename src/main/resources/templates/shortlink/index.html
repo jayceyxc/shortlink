@@ -47,12 +47,15 @@
         <th:block th:each="record : ${records}">
             <tr>
                 <td scope="row" th:text="${record.name}">...</td>
-                <td scope="row" th:text="${record.fullLink}" th:title="${record.fullLink}" style="overflow: hidden; white-space: nowrap; text-overflow: ellipsis;">...</td>
+                <td scope="row" th:text="${record.fullLink}" th:title="${record.fullLink}"
+                    style="overflow: hidden; white-space: nowrap; text-overflow: ellipsis;">...
+                </td>
                 <td scope="row" th:text="${record.shortLink}">...</td>
                 <td scope="row" th:text="${record.count}">...</td>
                 <td>
                     <input type="button" value="删除" name="delete"/>
                     <input type="button" value="修改" name="modify"/>
+                    <input type="button" value="查看" name="display"/>
                 </td>
             </tr>
         </th:block>
@@ -68,9 +71,14 @@ $(function(){
     });
     $("#tab").on("click", "[name='modify']", function(event){
         <!--$("#text").val($(this).closest("tr").find("td").eq(1).text());-->
+        location.href="shortlink/modify?url=" + $(this).closest("tr").find("td").eq(2).text()
+    });
+    $("#tab").on("click", "[name='display']", function(event){
+        <!--$("#text").val($(this).closest("tr").find("td").eq(1).text());-->
         location.href="shortlink/display?url=" + $(this).closest("tr").find("td").eq(2).text()
     });
 });
+
 </script>
 </body>
 </html>
