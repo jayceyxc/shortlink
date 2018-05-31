@@ -22,6 +22,7 @@ import java.net.URL;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Random;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
@@ -122,14 +123,16 @@ public class ShortLinkController {
 
         logger.info ("have short link add request, url is: " + url);
         url = url.trim ();
-        ShortLink shortLink;
-        if ((shortLink = shortLinkRepository.findByFullLink (url)) != null) {
-            logger.info ("This url already have short link");
-            model.addAttribute ("shortLink", shortLink.getShortLink ());
-            return "shortlink/short";
-        }
+//        ShortLink shortLink;
+//        if ((shortLink = shortLinkRepository.findByFullLink (url)) != null) {
+//            logger.info ("This url already have short link");
+//            model.addAttribute ("shortLink", shortLink.getShortLink ());
+//            return "shortlink/short";
+//        }
         ShortLink shortLinkObj = new ShortLink (url);
-        String[] shortLinkArray = ShortUrlGenerator.shortUrl (url);
+        String changedUrl = url + "" + System.currentTimeMillis ();
+        logger.info ("The url used to generate the short url: " + changedUrl);
+        String[] shortLinkArray = ShortUrlGenerator.shortUrl (changedUrl);
         String shortLinkStr;
         for (String tempShortLink : shortLinkArray) {
             if (shortLinkRepository.findByUri (tempShortLink) == null) {
