@@ -23,8 +23,10 @@ import java.net.URL;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
-import java.util.Random;
-import java.util.concurrent.*;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.LinkedBlockingQueue;
+import java.util.concurrent.TimeUnit;
 import java.util.concurrent.locks.ReentrantReadWriteLock;
 
 /**
@@ -59,6 +61,8 @@ public class ShortLinkController {
     private ShortLinkWebConfig conf;
 
     private String domain;
+
+    private static final String PREVIEW_PARAM = "preview";
 
     @PostConstruct
     public void loadData () {
@@ -383,9 +387,31 @@ public class ShortLinkController {
     }
 
     @RequestMapping(value = "/{uri}")
-    void handleShortLink (HttpServletResponse response, @PathVariable("uri") String uri) throws IOException {
+    void handleShortLink (HttpServletResponse response, @PathVariable("uri") String uri, @RequestParam(name = "preview", required = false) String preview) throws IOException {
         logger.info ("uri is: " + uri);
+        logger.info ("preview is: " + preview);
         uri = uri.trim ();
+        boolean isPreview = false;
+
+//        if (uri.contains ("?")) {
+//            String[] tokens = uri.split ("\\?");
+//            uri = tokens[0].trim ();
+//            String queryString = tokens[1].trim ();
+//            queryString = URLDecoder.decode (queryString, "UTF-8");
+//            List<NameValuePair> params = URLEncodedUtils.parse (queryString, Charset.forName("UTF-8"));
+//            for (NameValuePair param : params) {
+//                if (param.getName ().equals (PREVIEW_PARAM) && param.getValue ().equals ("1")) {
+//                    isPreview = true;
+//                }
+//            }
+//            if (isPreview) {
+//                logger.info ("This is a preview request");
+//            }
+//        }
+        if (preview != null && !preview.isEmpty () && preview.equals ("1")) {
+            logger.info ("This is a preview request");
+            isPreview = true;
+        }
 
         ShortLink savedShortLink = null;
         if (shortLinkCache.containsKey (uri)) {
@@ -398,7 +424,9 @@ public class ShortLinkController {
         }
         if (savedShortLink != null) {
             logger.debug ("before saved short link: " + savedShortLink);
-            savedShortLink.incrementCount ();
+            if (!isPreview) {
+                savedShortLink.incrementCount ();
+            }
             logger.debug ("after saved short link: " + savedShortLink);
 //            shortLinkRepository.saveAndFlush (savedShortLink);
             shortLinkCache.put (uri, savedShortLink);

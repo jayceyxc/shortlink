@@ -56,6 +56,7 @@
                     <input type="button" value="删除" name="delete"/>
                     <input type="button" value="修改" name="modify"/>
                     <input type="button" value="查看" name="display"/>
+                    <input type="button" value="预览" name="preview"/>
                     <!--<button type="button" class="btn btn-primary btn-sm" data-toggle="modal" data-target="#displayModal" th:data-name="${record.name}" th:data-shortlink="${record.shortLink}" th:data-fulllink="${record.fullLink}" th:data-count="${record.count}">-->
                     <!--查看-->
                     <!--</button>-->
@@ -113,67 +114,6 @@
         });
     });
 </script>
-<!--<div class="modal fade" id="displayModal" tabindex="-1" role="dialog" aria-labelledby="displayModalLabel">-->
-<!--<div class="modal-dialog" role="document">-->
-<!--<div class="modal-content">-->
-<!--<div class="modal-header">-->
-<!--<h4 class="modal-title" id="displayModalLabel">查看短链接</h4>-->
-<!--<button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>-->
-<!--</div>-->
-<!--<div class="modal-body">-->
-<!--<div class="container-fluid">-->
-<!--<div>-->
-<!--<h2 class="display-5 text-center">短链接详细信息</h2>-->
-<!--</div>-->
-<!--<div class="row">-->
-<!--<div class="col-xs-3 col-md-2 text-right">名称:</div>-->
-<!--<div class="col-xs-12 col-sm-6 col-md-8 text-left" id="shortLinkName">...</div>-->
-<!--</div>-->
-<!--<div class="row">-->
-<!--<div class="col-xs-3 col-md-2 text-right">短链接:</div>-->
-<!--<div class="col-xs-12 col-sm-6 col-md-8 text-left" id="shortLink">...</div>-->
-<!--</div>-->
-<!--<div class="row">-->
-<!--<div class="col-xs-3 col-md-2 text-right">完整链接:</div>-->
-<!--<div class="col-xs-12 col-sm-6 col-md-8 text-left" id="fullLink">...</div>-->
-<!--</div>-->
-<!--<div class="row">-->
-<!--<div class="col-xs-3 col-md-2 text-right">展示数:</div>-->
-<!--<div class="col-xs-12 col-sm-6 col-md-8 text-left" id="count">...</div>-->
-<!--</div>-->
-<!--</div>-->
-<!--</div>-->
-<!--<div class="modal-footer">-->
-<!--<button type="button" class="btn btn-default" data-dismiss="modal">关闭</button>-->
-<!--</div>-->
-<!--</div>-->
-<!--</div>-->
-<!--</div>-->
-<!--<script>-->
-<!--$(function(){-->
-<!--$('#displayModal').on('show.bs.modal', function (event) {-->
-<!--var button = $(event.relatedTarget) // Button that triggered the modal-->
-<!--var modal = $(this)-->
-<!--var short_link = button.data('shortlink') // Extract info from data-* attributes-->
-<!--console.warn("$(short_link)")-->
-<!--var short_link_name = button.data('name') // Extract info from data-* attributes-->
-<!--console.warn($(short_link_name))-->
-<!--var full_link = button.data('fulllink') // Extract info from data-* attributes-->
-<!--console.warn($(full_link))-->
-<!--var count = button.data('count') // Extract info from data-* attributes-->
-<!--console.warn(count)-->
-<!--modal.find('.modal-body div [id="shortLinkName"]').val(short_link_name)-->
-<!--modal.find('.modal-body div [id="shortLink"]').val(short_link)-->
-<!--modal.find('.modal-body div [id="fullLink"]').val(full_link)-->
-<!--modal.find('.modal-body div [id="count"]').val(count)-->
-<!--});-->
-<!--$("#displayModal").on("click", "[name='delete']", function(event){-->
-<!--&lt;!&ndash;$("#text").val($(this).closest("tr").find("td").eq(1).text());&ndash;&gt;-->
-<!--location.href="shortlink/del?url=" + $(this).closest("tr").find("td").eq(2).text()-->
-<!--});-->
-<!--});-->
-<!--</script>-->
-<!--<input type="text" id="text" />-->
 <script type="text/javascript">
 var short_link = ""
 $(function(){
@@ -190,6 +130,12 @@ $(function(){
     $("#tab").on("click", "[name='display']", function(event){
         <!--$("#text").val($(this).closest("tr").find("td").eq(1).text());-->
         location.href="shortlink/display?url=" + $(this).closest("tr").find("td").eq(2).text()
+    });
+    $("#tab").on("click", "[name='preview']", function(event){
+        <!--$("#text").val($(this).closest("tr").find("td").eq(1).text());-->
+        <!--location.href="http://" + $(this).closest("tr").find("td").eq(2).text() + "?preview=1"-->
+        var url = "http://" + $(this).closest("tr").find("td").eq(2).text() + "?preview=1"
+        window.open(url, '_blank');
     });
 });
 
