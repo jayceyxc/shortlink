@@ -430,7 +430,7 @@ public class ShortLinkController {
             logger.debug ("after saved short link: " + savedShortLink);
 //            shortLinkRepository.saveAndFlush (savedShortLink);
             shortLinkCache.put (uri, savedShortLink);
-            if (!updatedUri.contains (uri)) {
+            if (!isPreview && !updatedUri.contains (uri)) {
                 try {
                     if (lock.writeLock ().tryLock (100, TimeUnit.MILLISECONDS)) {
                         logger.info ("main thread get the write lock");
