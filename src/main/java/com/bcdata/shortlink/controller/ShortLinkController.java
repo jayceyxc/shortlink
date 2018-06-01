@@ -3,6 +3,7 @@ package com.bcdata.shortlink.controller;
 import com.bcdata.shortlink.config.ShortLinkWebConfig;
 import com.bcdata.shortlink.entity.ShortLink;
 import com.bcdata.shortlink.entity.ShortLinkRepository;
+import com.bcdata.shortlink.utils.MyThreadPoolExecutor;
 import com.bcdata.shortlink.utils.ShortUrlGenerator;
 import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
@@ -23,10 +24,7 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Random;
-import java.util.concurrent.ConcurrentHashMap;
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
-import java.util.concurrent.TimeUnit;
+import java.util.concurrent.*;
 import java.util.concurrent.locks.ReentrantReadWriteLock;
 
 /**
@@ -55,7 +53,7 @@ public class ShortLinkController {
 
     private static final ReentrantReadWriteLock lock = new ReentrantReadWriteLock ();
 
-    ExecutorService exec = Executors.newFixedThreadPool (1);
+    ExecutorService exec = new MyThreadPoolExecutor (10, 10, 0L, TimeUnit.MILLISECONDS.MILLISECONDS, new LinkedBlockingQueue<> ());
 
     @Autowired
     private ShortLinkWebConfig conf;
@@ -63,7 +61,7 @@ public class ShortLinkController {
     private String domain;
 
     @PostConstruct
-    public void loadData() {
+    public void loadData () {
         List<ShortLink> results = shortLinkRepository.findAll ();
         for (ShortLink shortLink : results) {
             logger.info ("init short for uri: " + shortLink.getUri ());
@@ -79,19 +77,30 @@ public class ShortLinkController {
     }
 
     @PostConstruct
-    public void createFlushThread() {
+    public void createFlushThread () {
         logger.info ("create flush data thread");
         Runnable flushTask = () -> {
-            while (true) {
-                try {
+            try {
+                while (true) {
                     logger.info ("run the update task");
                     try {
                         lock.writeLock ().lock ();
                         logger.info ("flush thread get write lock");
-                        for (String uri : updatedUri) {
+                        for (String uri: updatedUri) {
                             ShortLink shortLink = shortLinkCache.get (uri);
                             logger.info ("flush the data for uri: " + uri + ", content is " + shortLink);
-                            shortLinkRepository.saveAndFlush (shortLink);
+                            if (shortLink == null) {
+                                logger.error ("The content for uri " + uri + " is null");
+                                updatedUri.remove (uri);
+                                continue;
+                            }
+                            try {
+                                shortLinkRepository.saveAndFlush (shortLink);
+                            } catch (IllegalArgumentException ia) {
+                                logger.error (ia.getMessage ());
+                                logger.error ("failed to save the data for uri " + uri);
+                                updatedUri.remove (uri);
+                            }
                         }
                         updatedUri.clear ();
                     } finally {
@@ -99,16 +108,16 @@ public class ShortLinkController {
                         logger.info ("flush thread release write lock");
                     }
                     TimeUnit.SECONDS.sleep (60);
-                } catch (InterruptedException ie) {
-                    ie.printStackTrace ();
                 }
+            } catch (InterruptedException ie) {
+                ie.printStackTrace ();
             }
         };
-        exec.submit (flushTask);
+        exec.execute (flushTask);
     }
 
     @PreDestroy
-    public void destroy() {
+    public void destroy () {
         logger.warn ("Before destroy, flush the data");
         for (String uri : updatedUri) {
             ShortLink shortLink = shortLinkCache.get (uri);
@@ -118,8 +127,8 @@ public class ShortLinkController {
         updatedUri.clear ();
     }
 
-    @PostMapping(path="/shortlink/add")    // Map ONLY GET Requests
-    public String addShortLink(@RequestParam(name = "url", required = true) String url, @RequestParam(name = "name", required = true) String name, Model model) {
+    @PostMapping(path = "/shortlink/add")    // Map ONLY GET Requests
+    public String addShortLink (@RequestParam(name = "url", required = true) String url, @RequestParam(name = "name", required = true) String name, Model model) {
         // @ResponseBody means the returned String is the response, not a view name
         // @RequestParam means it is a parameter from the GET or POST request
 
@@ -186,8 +195,8 @@ public class ShortLinkController {
         return "shortlink/alreadyExists";
     }
 
-    @GetMapping(path="/shortlink/del")    // Map ONLY GET Requests
-    public String delShortLink(@RequestParam(name = "url", required = true) String url, Model model) {
+    @GetMapping(path = "/shortlink/del")    // Map ONLY GET Requests
+    public String delShortLink (@RequestParam(name = "url", required = true) String url, Model model) {
         logger.info ("have short link delete request, url is: " + url);
         url = url.trim ();
         String origUrl = url;
@@ -210,13 +219,13 @@ public class ShortLinkController {
             URL netUrl = new URL (url);
             String uri = netUrl.getPath ();
             if (uri.startsWith ("/")) {
-                uri = StringUtils.strip (uri,"/");
+                uri = StringUtils.strip (uri, "/");
             }
             if (updatedUri.contains (uri)) {
                 try {
                     lock.writeLock ().lock ();
                     logger.info ("remove the uri " + uri + " from updated uri");
-                    updatedUri.remove (uri);
+                    updatedUri.remove (url);
                 } finally {
                     lock.writeLock ().unlock ();
                 }
@@ -242,8 +251,8 @@ public class ShortLinkController {
         return "shortlink/delete";
     }
 
-    @GetMapping(path="/shortlink/display")    // Map ONLY GET Requests
-    public String displayShortLink(@RequestParam(name = "url", required = true) String url, Model model) {
+    @GetMapping(path = "/shortlink/display")    // Map ONLY GET Requests
+    public String displayShortLink (@RequestParam(name = "url", required = true) String url, Model model) {
         url = url.trim ();
         String origUrl = url;
         if (!url.startsWith ("http://") && !url.startsWith ("https://")) {
@@ -274,7 +283,7 @@ public class ShortLinkController {
                     logger.error ("The short link for url " + origUrl + " is not exist");
                 }
             }
-        }  catch (MalformedURLException mue) {
+        } catch (MalformedURLException mue) {
             mue.printStackTrace ();
         }
 
@@ -282,8 +291,8 @@ public class ShortLinkController {
         return "shortlink/alreadyExists";
     }
 
-    @GetMapping(path="/shortlink/modify")    // Map ONLY GET Requests
-    public String modifyShortLink(@RequestParam(name = "url", required = true) String url, Model model) {
+    @GetMapping(path = "/shortlink/modify")    // Map ONLY GET Requests
+    public String modifyShortLink (@RequestParam(name = "url", required = true) String url, Model model) {
         url = url.trim ();
         String origUrl = url;
         if (!url.startsWith ("http://") && !url.startsWith ("https://")) {
@@ -310,7 +319,7 @@ public class ShortLinkController {
                     logger.error ("The short link for url " + origUrl + " is not exist");
                 }
             }
-        }  catch (MalformedURLException mue) {
+        } catch (MalformedURLException mue) {
             mue.printStackTrace ();
         }
 
@@ -319,8 +328,8 @@ public class ShortLinkController {
     }
 
 
-    @PostMapping(path="/shortlink/modify")    // Map ONLY POST Requests
-    public String modifyShortLink(@RequestParam(name = "name", required = true) String name, @RequestParam(name = "url", required = true) String url, Model model) {
+    @PostMapping(path = "/shortlink/modify")    // Map ONLY POST Requests
+    public String modifyShortLink (@RequestParam(name = "name", required = true) String name, @RequestParam(name = "url", required = true) String url, Model model) {
         logger.info ("url: " + url);
         logger.info ("name: " + name);
         url = url.trim ();
@@ -353,7 +362,7 @@ public class ShortLinkController {
                     logger.error ("The short link for url " + origUrl + " is not exist");
                 }
             }
-        }  catch (MalformedURLException mue) {
+        } catch (MalformedURLException mue) {
             mue.printStackTrace ();
         }
 
@@ -361,8 +370,8 @@ public class ShortLinkController {
         return "shortlink/alreadyExists";
     }
 
-    @GetMapping(path="/shortlink") // Map ONLY GET Requests
-    public String getAllShortLink(Model model) {
+    @GetMapping(path = "/shortlink") // Map ONLY GET Requests
+    public String getAllShortLink (Model model) {
         Sort sort = new Sort (Sort.Direction.DESC, "id");
         List<ShortLink> results = shortLinkRepository.findAll (sort);
         for (ShortLink shortLink : results) {
@@ -373,8 +382,8 @@ public class ShortLinkController {
         return "shortlink/index";
     }
 
-    @RequestMapping(value="/{uri}")
-    void handleShortLink(HttpServletResponse response, @PathVariable("uri") String uri) throws IOException {
+    @RequestMapping(value = "/{uri}")
+    void handleShortLink (HttpServletResponse response, @PathVariable("uri") String uri) throws IOException {
         logger.info ("uri is: " + uri);
         uri = uri.trim ();
 
