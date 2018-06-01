@@ -71,11 +71,37 @@
     </table>
 </div>
 
-<div class="modal fade" id="modifyModal" tabindex="-1" role="dialog" aria-labelledby="exampleModalLabel">
+<div class="modal fade" id="deleteModal" tabindex="-1" role="dialog" aria-labelledby="deleteModalLabel">
     <div class="modal-dialog" role="document">
         <div class="modal-content">
             <div class="modal-header">
-                <h4 class="modal-title" id="exampleModalLabel">删除短链接确认</h4>
+                <h4 class="modal-title" id="deleteModalLabel">删除短链接确认</h4>
+                <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+            </div>
+            <div class="modal-body">
+                <form action="/shortlink/del" method="post">
+                    <div class="form-group">
+                        <label for="short-link-url" class="control-label">短链接:</label>
+                        <input name="short_link" type="text" class="form-control" id="short-link-url">
+                    </div>
+                    <!--<div class="form-group">-->
+                    <!--<label for="message-text" class="control-label">Message:</label>-->
+                    <!--<textarea class="form-control" id="message-text"></textarea>-->
+                    <!--</div>-->
+                </form>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-default" data-dismiss="modal">取消</button>
+                <button type="button" class="btn btn-primary" name="delete">确认</button>
+            </div>
+        </div>
+    </div>
+</div>
+<div class="modal fade" id="displayModal" tabindex="-1" role="dialog" aria-labelledby="displayModalLabel">
+    <div class="modal-dialog" role="document">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h4 class="modal-title" id="displayModalLabel">查看短连接</h4>
                 <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
             </div>
             <div class="modal-body">
@@ -99,7 +125,7 @@
 </div>
 <script>
     $(function(){
-        $('#modifyModal').on('show.bs.modal', function (event) {
+        $('#deleteModal').on('show.bs.modal', function (event) {
             <!--var button = $(event.relatedTarget) // Button that triggered the modal-->
             <!--var short_link = button.data('whatever') // Extract info from data-* attributes-->
             // If necessary, you could initiate an AJAX request here (and then do the updating in a callback).
@@ -108,7 +134,7 @@
             //modal.find('.modal-title').text('删除 ' + short_link)
             modal.find('.modal-body input').val(short_link)
         });
-        $("#modifyModal").on("click", "[name='delete']", function(event){
+        $("#deleteModal").on("click", "[name='delete']", function(event){
             <!--$("#text").val($(this).closest("tr").find("td").eq(1).text());-->
             location.href="shortlink/del?url=" + short_link
         });
@@ -121,7 +147,7 @@ $(function(){
         <!--$("#text").val($(this).closest("tr").find("td").eq(1).text());-->
         <!--location.href="shortlink/del?url=" + $(this).closest("tr").find("td").eq(2).text()-->
         short_link = $(this).closest("tr").find("td").eq(2).text()
-        $("#modifyModal").modal('toggle')
+        $("#deleteModal").modal('toggle')
     });
     $("#tab").on("click", "[name='modify']", function(event){
         <!--$("#text").val($(this).closest("tr").find("td").eq(1).text());-->
